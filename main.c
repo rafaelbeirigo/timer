@@ -1,15 +1,17 @@
 #include <emscripten.h>
-#include <stdio.h>
 #include <stdbool.h>
 
 int remaining_time = 0;
 bool running = false;
 
+// JS callback to update the display
 EM_JS(void, js_update, (int seconds_left, bool finished), {
     if (Module.onTick) Module.onTick(seconds_left, finished);
 });
 
-void timer_loop() {
+// Timer tick function
+EMSCRIPTEN_KEEPALIVE
+void tick() {
     if (!running) return;
 
     if (remaining_time > 0) {
@@ -21,13 +23,10 @@ void timer_loop() {
     }
 }
 
+// Start the timer with initial value
 EMSCRIPTEN_KEEPALIVE
 void start_timer(int seconds) {
     remaining_time = seconds;
     running = true;
-}
-
-EMSCRIPTEN_KEEPALIVE
-void tick() {
-    timer_loop();
+    js_update(remaining_time, false); // immediately display starting value
 }
