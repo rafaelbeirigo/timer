@@ -15,20 +15,10 @@ build:
 	emcc $(SRC) $(EMCC_FLAGS)
 	@echo "Build complete: $(OUT_JS) + $(OUT_WASM)"
 
-# Serve locally with live-reload
+# Serve locally
 serve: build
-	@echo "Serving at http://localhost:8000 (auto-rebuild on changes)"
-	@trap "echo 'Stopping server...'; kill $$PID; exit 0" SIGINT; \
-	while true; do \
-		python3 -m http.server 8000 & \
-		PID=$$!; \
-		sleep 1; \
-		# Watch only source files, ignore output
-		inotifywait -e modify --exclude '$(OUT_JS)|$(OUT_WASM)' $(SRC) $(HTML); \
-		echo "Changes detected. Rebuilding..."; \
-		make build; \
-		kill $$PID; \
-	done
+	@echo "Serving at http://localhost:8000"
+	@python3 -m http.server 8000
 
 # Clean build artifacts
 clean:
