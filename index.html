@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WASM Timer</title>
+</head>
+<body>
+<h1>WASM Timer</h1>
+<div>Time left: <span id="timer">10</span> seconds</div>
+
+<script src="timer.js"></script>
+<script>
+Module.onRuntimeInitialized = () => {
+    Module.onTick = (seconds, finished) => {
+        document.getElementById("timer").innerText = seconds;
+        if (finished) console.log("Timer finished!");
+    };
+
+    // Start 10-second timer
+    Module._start_timer(10);
+
+    function tickLoop() {
+        Module._tick();
+        if (parseInt(document.getElementById("timer").innerText) > 0) {
+            requestAnimationFrame(tickLoop);
+        }
+    }
+
+    requestAnimationFrame(tickLoop);
+};
+</script>
+</body>
+</html>
