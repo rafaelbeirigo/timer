@@ -1,26 +1,27 @@
+# Compiler
+EMCC = emcc
+
+# Source files
 SRC = main.c
-OUT_JS = main.js
-OUT_WASM = main.wasm
-HTML = index.html
 
-EMCC_FLAGS = -O3 -sEXPORTED_FUNCTIONS="['_start_timer','_tick']" \
-             -sEXPORTED_RUNTIME_METHODS="['ccall','cwrap']" \
-             -o $(OUT_JS)
+# Output
+OUT = main.js
 
-all: build
+# Compilation flags
+CFLAGS = -O2 -sEXPORTED_FUNCTIONS="['_next_time']" -sEXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
 
-# Build WASM + JS
-build:
-	@echo "Compiling $(SRC) to WASM..."
-	emcc $(SRC) $(EMCC_FLAGS)
-	@echo "Build complete: $(OUT_JS) + $(OUT_WASM)"
+# Default target
+all: $(OUT)
 
-# Serve locally
-serve: build
-	@echo "Serving at http://localhost:8000"
+# Build WASM
+$(OUT): $(SRC)
+	$(EMCC) $(SRC) $(CFLAGS) -o $(OUT)
+
+# Serve locally using Python HTTP server
+serve: $(OUT)
+	@echo "Serving on http://localhost:8000 ..."
 	@python3 -m http.server 8000
 
-# Clean build artifacts
+# Clean
 clean:
-	@echo "Cleaning build files..."
-	rm -f $(OUT_JS) $(OUT_WASM)
+	rm -f main.js main.wasm main.mem

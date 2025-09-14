@@ -1,27 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>WASM Timer</title>
+    <meta charset="UTF-8">
+    <title>Simple WASM Timer</title>
 </head>
 <body>
-<h1>WASM Timer</h1>
-<div>Time left: <span id="timer">10</span> seconds</div>
+    <h1>Timer: <span id="timerDisplay">0</span></h1>
 
-<script src="main.js"></script>
-<script>
-Module.onRuntimeInitialized = () => {
-    Module.onTick = (seconds, finished) => {
-        document.getElementById("timer").innerText = seconds;
-        if (finished) console.log("Timer finished!");
-    };
+    <script src="main.js"></script>
+    <script>
+        // Function to update the DOM display
+        function updateTimerDisplay(t) {
+            document.getElementById("timerDisplay").innerText = t;
+        }
 
-    // Start 10-second timer
-    Module._start_timer(10);
+        // Function to get a valid user input
+        function getInitialTime() {
+            let time;
+            while (true) {
+                const input = prompt("Enter the number of seconds for the timer:");
+                if (input === null) continue; // user pressed Cancel
 
-    // Tick once per second using JS interval (avoids sleep in WASM)
-    setInterval(() => Module._tick(), 1000);
-};
-</script>
+                time = Number(input);
+                if (Number.isInteger(time) && time > 0) {
+                    return time;
+                } else {
+                    alert("Please enter a valid positive integer.");
+                }
+            }
+        }
+
+        // Wait until WASM module is ready
+        Module.onRuntimeInitialized = () => {
+            let current_time = getInitialTime();
+            updateTimerDisplay(current_time);
+
+            // Start ticking every second
+            const interval = setInterval(() => {
+                current_time = Module._next_time(current_time);
+                updateTimerDisplay(current_time);
+
+                if (current_time === 0) {
+                    clearInterval(interval);
+                    console.log("Timer finished!");
+                }
+            }, 1000);
+        };
+    </script>
 </body>
 </html>
