@@ -19,9 +19,16 @@
             let time;
             while (true) {
                 const input = prompt("Enter the number of seconds for the timer:");
-                if (input === null) continue; // user pressed Cancel
+                
+                // Exit gracefully if user pressed Cancel or Esc
+                if (input === null) {
+                    console.log("User canceled input. Exiting timer.");
+                    return null; // signal cancellation
+                }
 
                 time = Number(input);
+
+                // Check if it is a valid positive integer
                 if (Number.isInteger(time) && time > 0) {
                     return time;
                 } else {
@@ -33,6 +40,10 @@
         // Wait until WASM module is ready
         Module.onRuntimeInitialized = () => {
             let current_time = getInitialTime();
+
+            // If user canceled, do not start timer
+            if (current_time === null) return;
+
             updateTimerDisplay(current_time);
 
             // Start ticking every second
